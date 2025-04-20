@@ -17,6 +17,12 @@ app.use(bodyParser.json())
 app.post('/auth', async (req, res) => {
   const { key, hwid } = req.body
 
+  //check secret from header'
+  const authHeader = req.headers['authorization']
+  if (!authHeader || authHeader !== process.env.API_SECRET) {
+    return res.status(403).send('unauthorized')
+  }
+
   if (!key || !hwid) return res.status(400).send('missing data')
 
   try {
@@ -37,6 +43,12 @@ app.post('/auth', async (req, res) => {
     console.error(err)
     res.status(500).send('server error')
   }
+})
+
+//test-check
+app.get("/", async (_, res) => {
+  const { rows } = await pool.query("SELECT NOW()")
+  res.send(`API running. Time from DB: ${rows[0].now}`)
 })
 
 app.listen(port, () => {
